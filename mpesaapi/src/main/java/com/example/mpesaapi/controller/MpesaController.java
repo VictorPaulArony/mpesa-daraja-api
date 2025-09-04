@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/mpesa")
@@ -53,9 +52,6 @@ public class MpesaController {
     @PostMapping("/callback")
     public ResponseEntity<?> handleCallback(@RequestBody String callbackData) {
         try {
-            // Process the callback from Safaricom
-            System.out.println("Received M-Pesa callback: " + callbackData);
-
             // Parse and process the callback data
             // You should implement proper validation and processing logic here
 
@@ -83,7 +79,6 @@ public class MpesaController {
     public ResponseEntity<?> handleTimeout(@RequestBody String timeoutData) {
         try {
             // Handle timeout callback
-            System.out.println("Timeout callback received: " + timeoutData);
 
             JSONObject response = new JSONObject();
             response.put("ResultCode", "0");
@@ -92,7 +87,6 @@ public class MpesaController {
             return ResponseEntity.ok(response.toString());
 
         } catch (Exception e) {
-            System.err.println("Error processing timeout: " + e.getMessage());
 
             JSONObject errorResponse = new JSONObject();
             errorResponse.put("ResultCode", "1");
