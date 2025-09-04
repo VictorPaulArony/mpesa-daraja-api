@@ -5,7 +5,6 @@ import com.example.mpesaapi.config.MpesaConfigProperties;
 import lombok.Data;
 import okhttp3.*;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,7 +20,6 @@ public class MpesaService {
     private String accessToken;
     private long tokenExpiryTime;
     
-    @Autowired
     public MpesaService(MpesaConfigProperties config) {
         this.config = config;
         this.accessToken = null;
