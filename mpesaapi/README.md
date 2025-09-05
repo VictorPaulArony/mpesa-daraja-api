@@ -214,3 +214,39 @@ This project is licensed under the Apache License.
 
 
 ---
+
+## cURL Command to Test B2C Endpoint
+
+```bash
+curl -X POST http://localhost:8080/api/mpesa/b2c \
+  -H "Content-Type: application/json" \
+  -d '{
+    "initiatorName": "testapi",
+    "securityCredential": "secureCredentialHere",
+    "commandID": "BusinessPayment",
+    "amount": "1",
+    "partyA": "600998",
+    "partyB": "254712345678",
+    "remarks": "Test B2C payment",
+    "queueTimeOutURL": "https://yourdomain.com/timeout",
+    "resultURL": "https://yourdomain.com/result",
+    "occassion": "Salary Payment"
+}'
+```
+### example
+```bash
+curl -X POST https://bc5e517a5a99.ngrok-free.app/api/mpesa/b2c \
+  -H "Content-Type: application/json" \
+  -d '{
+    "initiatorName": "testapi",
+    "securityCredential": "secureCredentialHere",
+    "commandID": "BusinessPayment",
+    "amount": "1",
+    "partyA": "600998",
+    "partyB": "254768744700",
+    "remarks": "Test B2C payment",
+    "queueTimeOutURL": "https://bc5e517a5a99.ngrok-free.app",
+    "resultURL": "https://bc5e517a5a99.ngrok-free.app",
+    "occassion": "Salary Payment"
+}'
+```
