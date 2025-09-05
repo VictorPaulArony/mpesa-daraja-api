@@ -1,34 +1,38 @@
 package com.example.mpesaapi.service;
 
 import okhttp3.*;
+
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.logging.Logger;
+
+import com.example.mpesaapi.dto.B2CRequestDto;
 
 @Service
 @RequiredArgsConstructor
 public class B2CRequest {
 
     private final MpesaService mpesaService; // Service to handle M-Pesa authentication
+    private static final Logger logger = Logger.getLogger(B2CRequest.class.getName());
 
-    public String B2CRequest(String initiatorName, String securityCredential, String commandID, String amount,
-            String partyA, String partyB, String remarks, String queueTimeOutURL, String resultURL, String occassion)
-            throws IOException {
+    public String sendB2CRequest(B2CRequestDto dto) throws IOException {
 
         // Create JSON payload for B2C request
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("InitiatorName", initiatorName);
-        jsonObject.put("SecurityCredential", securityCredential);
-        jsonObject.put("CommandID", commandID);
-        jsonObject.put("Amount", amount);
-        jsonObject.put("PartyA", partyA);
-        jsonObject.put("PartyB", partyB);
-        jsonObject.put("Remarks", remarks);
-        jsonObject.put("QueueTimeOutURL", queueTimeOutURL);
-        jsonObject.put("ResultURL", resultURL);
-        jsonObject.put("Occassion", occassion);
+        jsonObject.put("InitiatorName", dto.getInitiatorName());
+        jsonObject.put("SecurityCredential", dto.getSecurityCredential());
+        jsonObject.put("CommandID", dto.getCommandID());
+        jsonObject.put("Amount", dto.getAmount());
+        jsonObject.put("PartyA", dto.getPartyA());
+        jsonObject.put("PartyB", dto.getPartyB());
+        jsonObject.put("Remarks", dto.getRemarks());
+        jsonObject.put("QueueTimeOutURL", dto.getQueueTimeOutURL());
+        jsonObject.put("ResultURL", dto.getResultURL());
+        jsonObject.put("Occassion", dto.getOccassion());
 
         String requestJson = jsonObject.toString(); // Convert JSON object to string
 
@@ -50,8 +54,12 @@ public class B2CRequest {
                 throw new IOException("Unexpected HTTP status code: " + response.code());
             }
 
-            String responseBody = response.body().string(); // Read response body
-            System.out.println("M-Pesa B2C API Response: " + responseBody);
+            ResponseBody finalBody = response.body(); // Read response body
+            if (finalBody == null) {
+                throw new IOException("Response body is null");
+            }
+            String responseBody = finalBody.string();
+            logger.info(responseBody);
             return responseBody; // Return response to caller
         }
     }
