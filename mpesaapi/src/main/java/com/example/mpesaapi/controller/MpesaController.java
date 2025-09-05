@@ -1,6 +1,7 @@
 package com.example.mpesaapi.controller;
 
 import com.example.mpesaapi.service.MpesaService;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -12,35 +13,37 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.example.mpesaapi.dto.STKPushRequestDto;
+import com.example.mpesaapi.service.SendSTKPush;
 
 @RestController
 @RequestMapping("/api/mpesa")
 public class MpesaController {
 
     private final MpesaService mpesaService;
+    private final SendSTKPush sendSTKPush;
 
-    public MpesaController(MpesaService mpesaService) {
+    public MpesaController(MpesaService mpesaService, SendSTKPush sendSTKPush) {
         this.mpesaService = mpesaService;
+        this.sendSTKPush = sendSTKPush;
     }
 
     @PostMapping("/stk-push")
-    public ResponseEntity<?> initiateSTKPush(@RequestBody STKPushRequest request) {
+    public ResponseEntity<?> initiateSTKPush(@RequestBody STKPushRequestDto request) {
         try {
-            String response = mpesaService.initiateSTKPush(
+            String response = sendSTKPush.initiateSTKPush(
                     mpesaService.getBusinessShortcode(),
                     mpesaService.getPasskey(),
-                    request.getTransactionType(),
-                    request.getAmount(),
-                    request.getPhoneNumber(),
-                    request.getAccountReference(),
-                    request.getTransactionDesc(),
                     mpesaService.getCallbackUrl(),
-                    mpesaService.getTimeoutUrl());
+                    mpesaService.getTimeoutUrl(),
+                    request);
 
             return ResponseEntity.ok(response);
 
-        } catch (IOException e) {
+        } catch (JSONException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error initiating STK Push: " + e.getMessage());
         } catch (Exception e) {
@@ -62,7 +65,7 @@ public class MpesaController {
 
             return ResponseEntity.ok(response.toString());
 
-        } catch (Exception e) {
+        } catch (JSONException e) {
             System.err.println("Error processing callback: " + e.getMessage());
 
             // Return error response to M-Pesa
@@ -86,14 +89,14 @@ public class MpesaController {
 
             return ResponseEntity.ok(response.toString());
 
-        } catch (Exception e) {
+        } catch (JSONException e) {
 
             JSONObject errorResponse = new JSONObject();
             errorResponse.put("ResultCode", "1");
             errorResponse.put("ResultDesc", "Error processing timeout");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(errorResponse.toString());
+                    .body(errorResponse.toString() + e.getMessage());
         }
     }
 
@@ -101,9 +104,10 @@ public class MpesaController {
     public ResponseEntity<?> checkTransactionStatus(@PathVariable String checkoutRequestId) {
         try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            String password = generatePassword(mpesaService.getBusinessShortcode(), mpesaService.getPasskey(), timestamp);
+            String password = generatePassword(mpesaService.getBusinessShortcode(), mpesaService.getPasskey(),
+                    timestamp);
 
-            String response = mpesaService.STKPushTransactionStatus(
+            String response = sendSTKPush.sTKPushTransactionStatus(
                     mpesaService.getBusinessShortcode(),
                     password,
                     timestamp,
@@ -138,53 +142,4 @@ public class MpesaController {
         return Base64.getEncoder().encodeToString(rawPassword.getBytes());
     }
 
-    // DTO classes
-    public static class STKPushRequest {
-        private String transactionType;
-        private String amount;
-        private String phoneNumber;
-        private String accountReference;
-        private String transactionDesc;
-
-        // Getters and setters
-        public String getTransactionType() {
-            return transactionType;
-        }
-
-        public void setTransactionType(String transactionType) {
-            this.transactionType = transactionType;
-        }
-
-        public String getAmount() {
-            return amount;
-        }
-
-        public void setAmount(String amount) {
-            this.amount = amount;
-        }
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
-
-        public String getAccountReference() {
-            return accountReference;
-        }
-
-        public void setAccountReference(String accountReference) {
-            this.accountReference = accountReference;
-        }
-
-        public String getTransactionDesc() {
-            return transactionDesc;
-        }
-
-        public void setTransactionDesc(String transactionDesc) {
-            this.transactionDesc = transactionDesc;
-        }
-    }
 }
