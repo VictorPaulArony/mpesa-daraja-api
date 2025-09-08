@@ -25,6 +25,8 @@ public class MpesaController {
 
     private final MpesaService mpesaService;
     private final SendSTKPush sendSTKPush;
+    private static final String RESULTCODE = "ResultCode";
+    private static final String RESULTDESC = "ResultDesc";
 
     public MpesaController(MpesaService mpesaService, SendSTKPush sendSTKPush) {
         this.mpesaService = mpesaService;
@@ -32,7 +34,7 @@ public class MpesaController {
     }
 
     @PostMapping("/stk-push")
-    public ResponseEntity<?> initiateSTKPush(@RequestBody STKPushRequestDto request) {
+    public ResponseEntity<String> initiateSTKPush(@RequestBody STKPushRequestDto request) {
         try {
             String response = sendSTKPush.initiateSTKPush(
                     mpesaService.getBusinessShortcode(),
@@ -46,22 +48,22 @@ public class MpesaController {
         } catch (JSONException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error initiating STK Push: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected error: " + e.getMessage());
         }
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<?> handleCallback(@RequestBody String callbackData) {
+    public ResponseEntity<String> handleCallback(@RequestBody String callbackData) {
         try {
             // Parse and process the callback data
             // You should implement proper validation and processing logic here
 
             // Return success response to M-Pesa
             JSONObject response = new JSONObject();
-            response.put("ResultCode", "0");
-            response.put("ResultDesc", "Callback processed successfully");
+            response.put(RESULTCODE, "0");
+            response.put(RESULTDESC, "Callback processed successfully");
 
             return ResponseEntity.ok(response.toString());
 
@@ -70,8 +72,8 @@ public class MpesaController {
 
             // Return error response to M-Pesa
             JSONObject errorResponse = new JSONObject();
-            errorResponse.put("ResultCode", "1");
-            errorResponse.put("ResultDesc", "Error processing callback");
+            errorResponse.put(RESULTCODE, "1");
+            errorResponse.put(RESULTDESC, "Error processing callback");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse.toString());
@@ -79,21 +81,21 @@ public class MpesaController {
     }
 
     @PostMapping("/timeout")
-    public ResponseEntity<?> handleTimeout(@RequestBody String timeoutData) {
+    public ResponseEntity<String> handleTimeout(@RequestBody String timeoutData) {
         try {
             // Handle timeout callback
 
             JSONObject response = new JSONObject();
-            response.put("ResultCode", "0");
-            response.put("ResultDesc", "Timeout callback processed");
+            response.put(RESULTCODE, "0");
+            response.put(RESULTDESC, "Timeout callback processed");
 
             return ResponseEntity.ok(response.toString());
 
         } catch (JSONException e) {
 
             JSONObject errorResponse = new JSONObject();
-            errorResponse.put("ResultCode", "1");
-            errorResponse.put("ResultDesc", "Error processing timeout");
+            errorResponse.put(RESULTCODE, "1");
+            errorResponse.put(RESULTDESC, "Error processing timeout");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse.toString() + e.getMessage());
@@ -101,7 +103,7 @@ public class MpesaController {
     }
 
     @GetMapping("/transaction-status/{checkoutRequestId}")
-    public ResponseEntity<?> checkTransactionStatus(@PathVariable String checkoutRequestId) {
+    public ResponseEntity<String> checkTransactionStatus(@PathVariable String checkoutRequestId) {
         try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             String password = generatePassword(mpesaService.getBusinessShortcode(), mpesaService.getPasskey(),
@@ -125,7 +127,7 @@ public class MpesaController {
     }
 
     @GetMapping("/debug-config")
-    public ResponseEntity<?> debugConfig() {
+    public ResponseEntity<Map<String, String>> debugConfig() {
         Map<String, String> config = new HashMap<>();
         config.put("APP_KEY", mpesaService.getAppKey());
         config.put("APP_SECRET", mpesaService.getAppSecret() != null ? "***SET***" : "NULL");
