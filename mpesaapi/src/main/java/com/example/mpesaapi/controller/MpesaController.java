@@ -68,7 +68,6 @@ public class MpesaController {
             return ResponseEntity.ok(response.toString());
 
         } catch (JSONException e) {
-            System.err.println("Error processing callback: " + e.getMessage());
 
             // Return error response to M-Pesa
             JSONObject errorResponse = new JSONObject();
