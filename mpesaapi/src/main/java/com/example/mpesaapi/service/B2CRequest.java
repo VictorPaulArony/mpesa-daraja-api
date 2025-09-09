@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.example.mpesaapi.config.MpesaConfigProperties;
 import com.example.mpesaapi.dto.B2CRequestDto;
 
 @Service
@@ -18,6 +19,9 @@ public class B2CRequest {
 
     private final MpesaService mpesaService; // Service to handle M-Pesa authentication
     private static final Logger logger = Logger.getLogger(B2CRequest.class.getName());
+    private static final String SANDURL = "https://sandbox.safaricom.co.ke";
+    private static final String PRODURL = "https://api.safaricom.co.ke";
+    private final MpesaConfigProperties config;
 
     public String sendB2CRequest(B2CRequestDto dto) throws IOException {
 
@@ -36,13 +40,15 @@ public class B2CRequest {
 
         String requestJson = jsonObject.toString(); // Convert JSON object to string
 
+        String baseUrl = isSandbox() ? SANDURL : PRODURL;
+
         OkHttpClient client = new OkHttpClient(); // Create HTTP client
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, requestJson);
 
         // Build HTTP request to M-Pesa B2C endpoint
         Request request = new Request.Builder()
-                .url("https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest")
+                .url(baseUrl + "/mpesa/b2c/v1/paymentrequest")
                 .post(body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer " + mpesaService.authenticate()) // Add access token
@@ -62,5 +68,9 @@ public class B2CRequest {
             logger.info(responseBody);
             return responseBody; // Return response to caller
         }
+    }
+
+     private boolean isSandbox() {
+        return "sandbox".equalsIgnoreCase(config.getEnv());
     }
 }
