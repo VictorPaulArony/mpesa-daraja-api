@@ -113,7 +113,7 @@ Content-Type: application/json
 #### CURL Example:
 
 ```bash
-curl -X POST http://localhost:8080/api/mpesa/stk-push \
+curl -X POST https://85e29ec7f91f.ngrok-free.app/api/mpesa/stk-push \
   -H "Content-Type: application/json" \
   -d '{
     "transactionType": "CustomerPayBillOnline",
@@ -151,13 +151,13 @@ Content-Type: application/json
 ### 4. **Transaction Status**
 
 ```http
-GET /api/mpesa/transaction-status/{checkoutRequestId}
+GET /api/mpesa/transaction-status/ws_CO_06092
 ```
 
 #### CURL Example:
 
 ```bash
-curl http://localhost:8080/api/mpesa/transaction-status/ws_CO_123456789
+curl http://localhost:8080/api/mpesa/transaction-status/ws_CO_06092
 ```
 
 ---
@@ -235,7 +235,7 @@ curl -X POST http://localhost:8080/api/mpesa/b2c \
 ```
 ### example
 ```bash
-curl -X POST https://bc5e517a5a99.ngrok-free.app/api/mpesa/b2c \
+curl -X POST https://85e29ec7f91f.ngrok-free.app/api/mpesa/b2c \
   -H "Content-Type: application/json" \
   -d '{
     "initiatorName": "testapi",
@@ -245,8 +245,89 @@ curl -X POST https://bc5e517a5a99.ngrok-free.app/api/mpesa/b2c \
     "partyA": "600998",
     "partyB": "254768744700",
     "remarks": "Test B2C payment",
-    "queueTimeOutURL": "https://bc5e517a5a99.ngrok-free.app",
-    "resultURL": "https://bc5e517a5a99.ngrok-free.app",
+    "queueTimeOutURL": "https://85e29ec7f91f.ngrok-free.app",
+    "resultURL": "https://85e29ec7f91f.ngrok-free.app",
     "occassion": "Salary Payment"
+}'
+```
+
+## B2BRequest
+```bash
+curl -X POST http://localhost:8080/api/mpesa/b2b \
+  -H "Content-Type: application/json" \
+  -d '{
+    "initiatorName": "testapi",
+    "securityCredential": "YourSecurityCredentialHere",
+    "commandID": "BusinessPayBill",
+    "senderIdentifierType": "4",
+    "receiverIdentifierType": "4",
+    "amount": "1000",
+    "partyA": "600000",
+    "partyB": "600001",
+    "remarks": "Payment",
+    "accountReference": "REF123456",
+    "queueTimeOutURL": "https://yourdomain.com/timeout",
+    "resultURL": "https://yourdomain.com/result"
+}'
+```
+
+## Balance Inquiry
+```bash 
+curl -X POST https://85e29ec7f91f.ngrok-free.app/api/mpesa/balance-inquiry \
+  -H "Content-Type: application/json" \
+  -d '{
+    "initiator": "testapi",
+    "securityCredential": "YourSecurityCredentialHere",
+    "commandID": "AccountBalance",
+    "partyA": "600000",
+    "identifierType": "4",
+    "remarks": "Checking balance",
+    "queueTimeOutURL": "https://85e29ec7f91f.ngrok-free.app",
+    "resultURL": "https://85e29ec7f91f.ngrok-free.app"
+}'
+```
+
+## C2B Simulation
+```bash 
+curl -X POST http://localhost:8080/api/mpesa/c2b/simulate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shortCode": "600000",
+    "commandID": "CustomerPayBillOnline",
+    "amount": "1",
+    "msisdn": "254768744700",
+    "billRefNumber": "INV123456"
+}'
+```
+
+## Register URL
+```bash
+curl -X POST http://localhost:8080/api/mpesa/c2b/register-url \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shortCode": "600000",
+    "responseType": "Completed",
+    "confirmationURL": "https://yourdomain.com/api/mpesa/confirmation",
+    "validationURL": "https://yourdomain.com/api/mpesa/validation"
+}'
+```
+
+## M-Pesa Reversal API integration
+
+```bash
+curl -X POST http://localhost:8080/api/mpesa/reversal \
+  -H "Content-Type: application/json" \
+  -d '{
+    "initiator": "testapi",
+    "securityCredential": "YourSecurityCredentialHere",
+    "commandID": "TransactionReversal",
+    "transactionID": "OEI2AK4Q16",
+    "amount": "100",
+    "receiverParty": "600000",
+    "recieverIdentifierType": "11",
+    "queueTimeOutURL": "https://yourdomain.com/timeout",
+    "resultURL": "https://yourdomain.com/result",
+    "remarks": "Test reversal",
+    "ocassion": "Mistaken payment"
 }'
 ```
